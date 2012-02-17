@@ -27,7 +27,7 @@ Requirements:
 
 Installation of Twitter Search is rather straightforward.
 
-1. Upload the `twitter_search` directory to your `/wp-content/plugins/` directory.
+1. Upload the `twitter-search-for-wp` directory to your `/wp-content/plugins/` directory.
 2. Activate the plugin through the 'Plugins' menu in WordPress.
 3. Hop over to the Widgets tab and add a Twitter Search Widget.
 4. Customize the options for the widget.
@@ -58,8 +58,8 @@ Tweets can be limited in the widget settings.  Between 1 and 15 is recommended.
 
 Should you need to remove Twitter Search:
 
-1. Deactivate the plugin through the 'Plugins' menu in WordPress.
-1. Delete the `twitter_search` directory from your `/wp-content/plugins/` directory.
+1. Go to Plugins > Twitter Search > Deactivate.
+2. Once the page is refreshed, there will be a Delete link where there was a Deactivate link.
 
 == Screenshots ==
 
