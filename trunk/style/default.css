@@ -1,0 +1,41 @@
+.twit-search-feed ul,
+.twit-search-feed ul li{
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.twit-search-feed ul{
+	margin: 1em 0;
+	font-size: 0.95em
+}
+.twit-search-feed ul li span.who img{
+	float: left;
+	width: auto;
+	margin-right: 0.5em;
+	position: absolute;
+	left: 0;
+	top: 0.5em;
+	width: 32px;
+}
+.twit-search-feed ul li p{
+	margin: 0;
+}
+.twit-search-feed ul li{
+	padding: 0.5em 0 0.5em 48px;
+	position: relative;
+   word-break: normal;
+   word-wrap: break-word;
+}
+
+.twit-search-feed ul li .time{
+	font-size: 0.8em;
+	opacity: 0.5;
+	-moz-opacity:0.5;
+}
+.twit-search-feed ul li .reply{
+	text-transform: lowercase;
+	visibility: hidden;
+}
+.twit-search-feed ul li:hover .reply{
+	visibility: visible;
+}
