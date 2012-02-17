@@ -13,10 +13,10 @@ Twitter Search pulls tweets based on a custom search query on any search string 
 
 Features:
 
-*   Choose between recent, loved, and top tracks
-*   Adjust how many tracks are shown
-*   Adjust how often tracks get pulled from Last.fm
-*   Customizable appearance using basic tags
+*   Display Unlimited Twitter Search Widgets on your blog
+*   Adjust feeds based on search parameters from search.twitter.com
+*   Add custom CSS to add custom widget styles
+*   Twitter Search results caching using the Transient API
 
 Requirements:
 
