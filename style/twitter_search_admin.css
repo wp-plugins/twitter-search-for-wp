@@ -1,0 +1,66 @@
+label{
+	font-weight: bold;
+	display: block;
+}
+
+.helper{
+	display: none;
+	border: 1px solid rgb(240,240,240);
+	background: rgb(255,255,255);
+	padding: 10px;
+	margin-bottom: 10px;
+	float: right;
+	clear: both;
+	width: 350px;
+	border-radius: 6px;
+	-moz-border-radius: 6px;
+	-webkit-border-radius: 6px;
+	box-shadow: -1px -1px rgb(255,255,255),
+				-2px -2px rgb(255,255,255),
+				-3px -3px rgb(255,255,255),
+				-4px -4px rgb(255,255,255),
+				-5px -5px rgb(255,255,255),
+				-1px 1px rgb(255,255,255),
+				-2px 2px rgb(255,255,255),
+				-3px 3px rgb(255,255,255),
+				-4px 4px rgb(255,255,255),
+				-5px 5px rgb(255,255,255);
+	-moz-box-shadow: -1px -1px rgb(255,255,255),
+				-2px -2px rgb(255,255,255),
+				-3px -3px rgb(255,255,255),
+				-4px -4px rgb(255,255,255),
+				-5px -5px rgb(255,255,255),
+				-1px 1px rgb(255,255,255),
+				-2px 2px rgb(255,255,255),
+				-3px 3px rgb(255,255,255),
+				-4px 4px rgb(255,255,255),
+				-5px 5px rgb(255,255,255);
+	-webkit-box-shadow: -1px -1px rgb(255,255,255),
+				-2px -2px rgb(255,255,255),
+				-3px -3px rgb(255,255,255),
+				-4px -4px rgb(255,255,255),
+				-5px -5px rgb(255,255,255),
+				-1px 1px rgb(255,255,255),
+				-2px 2px rgb(255,255,255),
+				-3px 3px rgb(255,255,255),
+				-4px 4px rgb(255,255,255),
+				-5px 5px rgb(255,255,255);
+}
+
+.helperclear{
+	clear: both;
+}
+
+.tweet_format{
+	width: 100%;
+}
+
+.tweet_templates{
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.widget-liquid-right .widget, #wp_inactive_widgets .widget, .widget-liquid-right .sidebar-description{
+	overflow: visible;
+}
