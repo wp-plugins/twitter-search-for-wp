@@ -3,7 +3,7 @@ Contributors: chriswallace, misternifty
 Tags: twitter,search,query,tweets,social,media
 Requires at least: 2.5
 Tested up to: 2.6.2
-Stable tag: 1.0.1
+Stable tag: 1.1.1
 
 Twitter Search displays tweets based on a search query pulled from search.twitter.com.
 
