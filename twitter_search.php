@@ -2,7 +2,7 @@
 
 /*
 Plugin Name: Twitter Search
-Version: 1.0.1
+Version: 1.1.1
 Plugin URI: http://upthemes.com/plugins/twitter-search/
 Description: Displays tweets in a handy dandy, customizable widget via the Twitter Search API. There are no options for the overall plugin. Simply visit your Widgets section and drop it into a widget area.
 Author: Rogie King for UpThemes
@@ -31,7 +31,25 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-require_once(ABSPATH . "wp-includes/class-snoopy.php");
+//require_once(ABSPATH . "wp-includes/http.php");
+
+/*
+ * Assign theme folder name that you want to get information.
+ * make sure theme exist in wp-content/themes/ folder.
+ */
+
+$theme_name = '365psd'; 
+
+/*
+* Do not use get_stylesheet_uri() as $theme_filename,
+* it will result in PHP fopen error if allow_url_fopen is set to Off in php.ini,
+* which is what most shared hosting does. You can use get_stylesheet_directory()
+* or get_template_directory() though, because they return local paths.
+*/
+
+$theme_data = get_theme_data( get_theme_root() . '/' . $theme_name . '/style.css' );
+
+define('TWITS_VERSION',$theme_data['Version']);
 
 /**
  * Add function to widgets_init that'll load our widget.
@@ -54,14 +72,14 @@ function setup_twitter_search_languages(){
 }
 
 function add_js_to_widget_page(){
-	wp_enqueue_script( 'widget_admin', trailingslashit( get_bloginfo('url') ) . PLUGINDIR . '/' . dirname(plugin_basename(__FILE__)) . '/js/widget_admin.js', array('jquery') );
+	wp_enqueue_script( 'widget_admin', trailingslashit( get_bloginfo('url') ) . PLUGINDIR . '/' . dirname(plugin_basename(__FILE__)) . '/js/widget_admin.js', array('jquery'), TWITS_VERSION );
 
 }
 
 add_action('admin_print_scripts-widgets.php','add_js_to_widget_page');
 
 function add_css_to_widget_page(){
-	wp_enqueue_style( 'twitter_search_admin', trailingslashit( get_bloginfo('url') ) . PLUGINDIR . '/' . dirname(plugin_basename(__FILE__)) . '/style/twitter_search_admin.css', false );
+	wp_enqueue_style( 'twitter_search_admin', trailingslashit( get_bloginfo('url') ) . PLUGINDIR . '/' . dirname(plugin_basename(__FILE__)) . '/style/twitter_search_admin.css', TWITS_VERSION );
 
 }
 
@@ -80,7 +98,7 @@ class Twitter_Search_Widget extends WP_Widget {
 	
 	public $tweetsToShow = 10;
 	
-	public $cacheMinutes = 3;
+	public $cacheMinutes = 15;
 	
 	public $showReplies = true;
 	
@@ -125,17 +143,16 @@ class Twitter_Search_Widget extends WP_Widget {
 		$sTemplate = $instance['twitter_search_template'];
 		$before = $instance['twitter_before'];
 		$after = $instance['twitter_after'];
-		$useCustomCSS = $instance['twitter_use_custom_css'];
+		$this->cacheMinutes = (int)$instance['twitter_cache_minutes'];
 				
 		$this->tweetsToShow = intval( $iShow );
-		$this->cacheMinutes = $iCacheExpires;
 		
 		/* Before widget (defined by themes). */
 		echo $before_widget;
 		echo $before_title . $title . $after_title;
 		
 		if( $useCustomCSS == 'no' )
-			echo '<link href="' . plugin_dir_url( __FILE__ ) . '/style/default.css' . '" rel="stylesheet" type="text/css" />';
+			echo '<link href="' . trailingslashit( get_bloginfo('url') ) . PLUGINDIR . '/' . dirname(plugin_basename(__FILE__)) . '/style/default.css' . '" rel="stylesheet" type="text/css" />';
 		
 		$this->search( $sQuery );
 		$this->setTemplate($sTemplate,$before,$after);
@@ -153,12 +170,13 @@ class Twitter_Search_Widget extends WP_Widget {
 
 		/* Strip tags for title and name to remove HTML (important for text inputs). */
 		$instance['title'] = strip_tags( $new_instance['title'] );
-		$instance['twitter_search_query'] = $new_instance['twitter_search_query'];
-		$instance['twitter_search_show'] = $new_instance['twitter_search_show'];
+		$instance['twitter_search_query'] = strip_tags( $new_instance['twitter_search_query'] );
+		$instance['twitter_search_show'] = strip_tags( $new_instance['twitter_search_show'] );
 		$instance['twitter_search_template'] = $new_instance['twitter_search_template'];
 		$instance['twitter_before'] = $new_instance['twitter_before'];
 		$instance['twitter_after'] = $new_instance['twitter_after'];
 		$instance['twitter_use_custom_css'] = $new_instance['twitter_use_custom_css'];
+		$instance['twitter_cache_minutes'] = (int)$new_instance['twitter_cache_minutes'];
 		
 		return $instance;
 	}
@@ -171,13 +189,13 @@ class Twitter_Search_Widget extends WP_Widget {
 	function form( $instance ) {
 
 		/* Set up some default widget settings. */
-		$defaults = array( 'title' => __('Latest Tweets', 'twitsearch'), 'twitter_search_query' => '@upthemes', 'twitter_search_show' => $this->tweetsToShow, 'twitter_search_template' => $this->tpl['tweet'], 'twitter_before' => $this->tpl['before'], 'twitter_after' => $this->tpl['after'], 'twitter_use_custom_css' => 'no' );
+		$defaults = array( 'title' => __('Latest Tweets', 'twitsearch'), 'twitter_search_query' => '@upthemes', 'twitter_search_show' => $this->tweetsToShow, 'twitter_search_template' => $this->tpl['tweet'], 'twitter_before' => $this->tpl['before'], 'twitter_after' => $this->tpl['after'], 'twitter_use_custom_css' => 'no', 'twitter_cache_minutes' => $this->cacheMinutes );
 		$instance = wp_parse_args( (array) $instance, $defaults ); ?>
 		
 		<!-- Widget Title -->
 		<p>
 			<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e("Widget Title","twitsearch"); ?></label>
-			<input type="text" size="28" value="<?php echo esc_attr($instance['title']); ?>" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" />
+			<input type="text" size="28" value="<?php echo $instance['title']; ?>" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" />
 		</p>
 
 		<!-- Twitter Search Query -->
@@ -236,6 +254,12 @@ class Twitter_Search_Widget extends WP_Widget {
 			<label for="<?php echo $this->get_field_id( 'twitter_after' ); ?>"><?php _e("HTML After Tweets","twitsearch"); ?></label>
 			<input type="text" size="4" value="<?php echo $instance['twitter_after']; ?>" id="<?php echo $this->get_field_id( 'twitter_after' ); ?>" name="<?php echo $this->get_field_name( 'twitter_after' ); ?>" />
 		</p>
+
+		<!-- HTML Minutes to Cache Twitter Search -->
+		<p>
+			<label for="<?php echo $this->get_field_id( 'twitter_cache_minutes' ); ?>"><?php _e("Minutes to Cache Tweets","twitsearch"); ?></label>
+			<input type="text" size="3" value="<?php echo $instance['twitter_cache_minutes']; ?>" id="<?php echo $this->get_field_id( 'twitter_cache_minutes' ); ?>" name="<?php echo $this->get_field_name( 'twitter_cache_minutes' ); ?>" />
+		</p>
 			
 		<!-- Tweet Display Format -->
 		<p>
@@ -277,63 +301,127 @@ class Twitter_Search_Widget extends WP_Widget {
 		
 		$this->q = $query;
 		
-		$cachedJSON = get_transient($this->q);
-				
-		if( $cachedJSON == false ){
+		$tempJSON = get_option("twitsearch_cache_{$this->id}");
+		
+		$cachedJSON = $tempJSON['json'];
+		
+		$time = time();
 
+		if( $tempJSON )
+			$from_time = $tempJSON['time'];
+		else
+			$from_time = $time;
+			
+		$difference = (($time - $from_time) / 60);
+		
+		if( ($difference > $this->cacheMinutes) || $cachedJSON == false ): // set up database cache object if no cached object found
+			
 			$this->currentUrl = $this->url . "?rpp=" . $this->tweetsToShow . "&q=" . urlencode($this->q);
 			
-			$snoopy = new Snoopy();
-			$got = $snoopy->fetch($this->currentUrl);		
-			
-			if( $got ){
-			
-			   $this->json = json_decode( $snoopy->results, true );
-			
-            if( array_key_exists('error', $this->json) ){
-   			   
-   			   echo($this->json['error']);
-   			   
-   			   return null;
-   			};	 
-   			
-   			$results = array();
-   			
-   			if( $this->showReplies == false ){
-   				foreach( $this->json['results'] as $index => $tweet ){					
-   					
-   					if( !is_numeric($tweet['to_user_id']) ){
-   						$results[] = $tweet;
+			$got = wp_remote_get($this->currentUrl);		
 
-   					}
-   				}
-   				$this->json['results'] = $results;
-   			}
-   			   			
-   			set_transient( $this->q,$this->json, 60*5 );
-			}
+			if( $got ):
 			
-		}else{
+			   $this->json = json_decode( $got['body'], true );
+				
+	            if( array_key_exists('error', $this->json) ):
+	            	   			   
+					$twitsearch_cache = get_option("twitsearch_cache_{$this->id}");
+	
+					if( $twitsearch_cache['json'] ):
+						$cachedJSON = $twitsearch_cache['json'];
+					else:
+						$cachedJSON = false;
+					endif;
+	
+					$this->json = $cachedJSON;
+					
+					return;
+	   			   
+	   			endif;
+	   			
+	   			$results = array();
+	   			
+	   			if( $this->showReplies == false ):
+	   			
+	   				foreach( $this->json['results'] as $index => $tweet ):				
+	   					
+	   					if( !is_numeric($tweet['to_user_id']) ):
+	   						$results[] = $tweet;
+	
+	   					endif;
+	   					
+	   				endforeach;
+	   				
+	   				$this->json['results'] = $results;
+
+					return;
+	   				
+	   			endif;
+				
+				$args = array("json" => $this->json, 
+							  "time" => $time );
+			
+				update_option("twitsearch_cache_{$this->id}", $args );
+				
+				$twitsearch_cache = get_option("twitsearch_cache_{$this->id}");
+
+				if( $twitsearch_cache['json'] ):
+					$cachedJSON = $twitsearch_cache['json'];
+				else:
+					$cachedJSON = false;
+				endif;
+	
+				$this->json = $cachedJSON;
+
+				return;
+				
+			else:
+			
+				$twitsearch_cache = get_option("twitsearch_cache_{$this->id}");
+
+				if( $twitsearch_cache['json'] ):
+					$cachedJSON = $twitsearch_cache['json'];
+				else:
+					$cachedJSON = false;
+				endif;
+
+				$this->json = $cachedJSON;
+
+				return;
+				
+			endif;
+		
+		else:
 		
 			$this->json = $cachedJSON;
-			
-		}
+		
+		endif;
 
-		return $this->json;	
+		return $this->json;
+		
 	}
 
 	function render(){
 	  
 	  echo $this->tpl['before'];
-	  	  
-		foreach( $this->json['results'] as $index => $tweet ){					
-			if( $index >= $this->tweetsToShow ){
-			   break;
-			}else{	
-			   $tweet['index'] = $index;
-			   echo( $this->applyTemplate( $tweet, $this->tpl['tweet'] ) );
+	  
+		if( !empty($this->json) && is_array($this->json) ):
+		  	  
+			foreach( $this->json['results'] as $index => $tweet ){					
+				if( $index >= $this->tweetsToShow ){
+				   break;
+				}else{	
+				   $tweet['index'] = $index;
+				   echo( $this->applyTemplate( $tweet, $this->tpl['tweet'] ) );
+				}
 			}
-		}
+			
+		else:
+		
+			echo "<li>" . __("No feed available.","twitsearch") . "</li>";
+			
+		endif;
 		
 	  echo $this->tpl['after'];
 			
